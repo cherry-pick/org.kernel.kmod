@@ -221,7 +221,7 @@ static long org_kernel_kmod_Info(VarlinkServer *server,
 static long org_kernel_kmod_List(VarlinkServer *server,
                                  VarlinkCall *call,
                                  VarlinkObject *parameters,
-                                 long flags,
+                                 uint64_t flags,
                                  void *userdata) {
         struct kmod_ctx *kmod = userdata;
         _cleanup_(varlink_array_unrefp) VarlinkArray *modules = NULL;
