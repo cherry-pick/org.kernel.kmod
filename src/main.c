@@ -315,7 +315,6 @@ int main(int argc, char **argv) {
         r = varlink_server_new(&server,
                                address,
                                fd,
-                               program_invocation_short_name,
                                NULL,
                                &org_kernel_kmod_varlink, 1);
         if (r < 0)
