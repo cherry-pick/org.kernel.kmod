@@ -97,7 +97,7 @@ static long parm_set(struct parm **parms, const char *type, const char *value) {
 }
 
 /* Info(module: string) -> (info: ModuleInfo) */
-static long org_kernel_kmod_Info(VarlinkServer *server,
+static long org_kernel_kmod_Info(VarlinkService *service,
                                  VarlinkCall *call,
                                  VarlinkObject *parameters,
                                  uint64_t flags,
@@ -218,7 +218,7 @@ static long org_kernel_kmod_Info(VarlinkServer *server,
 }
 
 /* List() -> (modules: string[]) */
-static long org_kernel_kmod_List(VarlinkServer *server,
+static long org_kernel_kmod_List(VarlinkService *service,
                                  VarlinkCall *call,
                                  VarlinkObject *parameters,
                                  uint64_t flags,
@@ -287,7 +287,7 @@ static long org_kernel_kmod_List(VarlinkServer *server,
 
 int main(int argc, char **argv) {
         _cleanup_(kmod_unrefp) struct kmod_ctx *kmod = NULL;
-        _cleanup_(varlink_server_freep) VarlinkServer *server = NULL;
+        _cleanup_(varlink_service_freep) VarlinkService *service = NULL;
         const char *address;
         int fd = -1;
         _cleanup_(closep) int fd_epoll = -1;
@@ -312,31 +312,24 @@ int main(int argc, char **argv) {
         if (read(3, NULL, 0) == 0)
                 fd = 3;
 
-        r = varlink_server_new(&server,
-                               address,
-                               fd,
-                               NULL,
-                               &org_kernel_kmod_varlink, 1);
+        r = varlink_service_new(&service, "Kernel Module Information", "0.1", address, fd);
         if (r < 0)
                 return EXIT_FAILURE;
 
-        r = varlink_server_set_method_callback(server, "org.kernel.kmod.List",
-                                               org_kernel_kmod_List, kmod);
+        r = varlink_service_add_interface(service, org_kernel_kmod_varlink,
+                                         "List", org_kernel_kmod_List, kmod,
+                                         "Info", org_kernel_kmod_Info, kmod,
+                                         NULL);
         if (r < 0)
-                return EXIT_FAILURE;
-
-        r = varlink_server_set_method_callback(server, "org.kernel.kmod.Info",
-                                               org_kernel_kmod_Info, kmod);
-        if (r < 0)
-                return EXIT_FAILURE;
+                return r;
 
         fd_epoll = epoll_create1(EPOLL_CLOEXEC);
         if (fd_epoll < 0)
                 return EXIT_FAILURE;
 
         ep.events = EPOLLIN;
-        ep.data.fd = varlink_server_get_fd(server);
-        if (epoll_ctl(fd_epoll, EPOLL_CTL_ADD, varlink_server_get_fd(server), &ep) < 0)
+        ep.data.fd = varlink_service_get_fd(service);
+        if (epoll_ctl(fd_epoll, EPOLL_CTL_ADD, varlink_service_get_fd(service), &ep) < 0)
                 return EXIT_FAILURE;
 
         sigemptyset(&mask);
@@ -368,8 +361,8 @@ int main(int argc, char **argv) {
                 if (n == 0)
                         continue;
 
-                if (event.data.fd == varlink_server_get_fd(server)) {
-                        r = varlink_server_process_events(server);
+                if (event.data.fd == varlink_service_get_fd(service)) {
+                        r = varlink_service_process_events(service);
                         if (r < 0) {
                                 fprintf(stderr, "Control: %s\n", strerror(-r));
                                 if (r != -EPIPE)
