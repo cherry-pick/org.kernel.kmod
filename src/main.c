@@ -312,7 +312,13 @@ int main(int argc, char **argv) {
         if (read(3, NULL, 0) == 0)
                 fd = 3;
 
-        r = varlink_service_new(&service, "Kernel Module Information", "0.1", address, fd);
+        r = varlink_service_new(&service,
+                                "Varlink",
+                                "Kernel Module Information",
+                                VERSION,
+                                "https://github.com/varlink/org.kernel.kmod",
+                                address,
+                                fd);
         if (r < 0)
                 return EXIT_FAILURE;
 
