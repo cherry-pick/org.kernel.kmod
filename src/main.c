@@ -1,4 +1,4 @@
-#include "org.kernel.kmod.varlink.h"
+#include "org.kernel.kmod.varlink.c.inc"
 
 #include <errno.h>
 #include <libkmod.h>
