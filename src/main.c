@@ -322,6 +322,10 @@ int main(int argc, char **argv) {
         if (r < 0)
                 return EXIT_FAILURE;
 
+        r = varlink_service_set_credentials_mode(service, 0666);
+        if (r < 0)
+                return EXIT_FAILURE;
+
         r = varlink_service_add_interface(service, org_kernel_kmod_varlink,
                                          "List", org_kernel_kmod_List, kmod,
                                          "Info", org_kernel_kmod_Info, kmod,
