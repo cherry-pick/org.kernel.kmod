@@ -308,7 +308,7 @@ int main(int argc, char **argv) {
                 return EXIT_FAILURE;
         }
 
-        /* An activator passed us our connection. */
+        /* An activator passed us our listen socket. */
         if (read(3, NULL, 0) == 0)
                 fd = 3;
 
@@ -319,10 +319,6 @@ int main(int argc, char **argv) {
                                 "https://github.com/varlink/org.kernel.kmod",
                                 address,
                                 fd);
-        if (r < 0)
-                return EXIT_FAILURE;
-
-        r = varlink_service_set_credentials_mode(service, 0666);
         if (r < 0)
                 return EXIT_FAILURE;
 
