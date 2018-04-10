@@ -217,7 +217,6 @@ static long org_kernel_kmod_Info(VarlinkService *service,
         return varlink_call_reply(call, reply, 0);
 }
 
-/* List() -> (modules: string[]) */
 static long org_kernel_kmod_List(VarlinkService *service,
                                  VarlinkCall *call,
                                  VarlinkObject *parameters,

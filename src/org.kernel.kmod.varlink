@@ -1,7 +1,11 @@
 # Provides information about kernel modules.
 interface org.kernel.kmod
 
-type Parameter (name: string, type: string, description: string)
+type Parameter (
+  name: string,
+  type: string,
+  description: string
+)
 
 type ModuleInfo (
   name: string,
@@ -13,15 +17,15 @@ type ModuleInfo (
   srcversion: string,
   vermagic: string,
   depends: string,
-  aliases: string[],
-  parameters: Parameter[]
+  aliases: []string,
+  parameters: []Parameter
 )
 
 type LoadedModule (
   name: string,
   size: int,
   use_count: int,
-  used_by: string[]
+  used_by: []string
 )
 
 # Returns static information about a kernel module that is
@@ -30,8 +34,10 @@ method Info(module: string) -> (info: ModuleInfo)
 
 # Lists all modules that are loaded in the kernel, along
 # with their size and dependencies.
-method List() -> (modules: LoadedModule[])
+method List() -> (modules: []LoadedModule)
 
 error UnknownModule ()
+
 error NoInfoAvailable ()
+
 error InvalidParameter ()
