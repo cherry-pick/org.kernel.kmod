@@ -1,6 +1,7 @@
 #include "org.kernel.kmod.varlink.c.inc"
 
 #include <errno.h>
+#include <getopt.h>
 #include <libkmod.h>
 #include <string.h>
 #include <signal.h>
@@ -287,7 +288,13 @@ static long org_kernel_kmod_List(VarlinkService *service,
 int main(int argc, char **argv) {
         _cleanup_(kmod_unrefp) struct kmod_ctx *kmod = NULL;
         _cleanup_(varlink_service_freep) VarlinkService *service = NULL;
-        const char *address;
+        static const struct option options[] = {
+                { "varlink", required_argument, NULL, 'v' },
+                { "help",    no_argument,       NULL, 'h' },
+                {}
+        };
+        int c;
+        const char *address = NULL;
         int fd = -1;
         _cleanup_(closep) int fd_epoll = -1;
         _cleanup_(closep) int fd_signal = -1;
@@ -300,10 +307,19 @@ int main(int argc, char **argv) {
         if (!kmod)
                 return EXIT_FAILURE;
 
-        address = argv[1];
+        while ((c = getopt_long(argc, argv, ":vh", options, NULL)) >= 0) {
+                switch (c) {
+                        case 'h':
+                                printf("Usage: %s --varlink=URI\n\n", program_invocation_short_name);
+                                return EXIT_SUCCESS;
+
+                        case 'v':
+                                address = optarg;
+                }
+        }
+
         if (!address) {
                 fprintf(stderr, "Error: missing address.\n");
-
                 return EXIT_FAILURE;
         }
 
